@@ -1,0 +1,8 @@
+Pseudocode for the SIM Swap Detection File
+
+1. Import JSON library and reader to read files from the network provider on registered SIMs
+2. Before parsing, check if user has been authenticated prior to accessing
+3. Measure current bandwidth vs capacity (Bandwidth API) (once an hour, looping function)
+4. Parse JSON file and read data: ICCID and Location of ICCID (use location API) (once an hour)
+5. Function to detect any duplicated ICCID OR a location change of a registered SIM 
+
