@@ -1,8 +1,8 @@
 This is a repository for our group to be able to upload our files onto GitHub for collaborative coding. 
 
-Please download the desktop version of GitHub. Make sure to clone this repository; the easiest way to do this if you've never seen it before is using the repo's HTTPS. 
+Please download the desktop version of GitHub. Make sure to clone this repository; the easiest way to do this if you've never seen it before is using the repo's HTTPS. Simply click on the code dropdown, select 'open in desktop', and then just paste this into the prompt to clone a repository https://github.com/navatavasoli/AANNG.git
 
-Once that is done, and before making changes, please make sure that you fetch the origin! This is very important. Ensure that your file is in the AANNG folder classpath on your computer prior to beginning.
+Once that is done, and before making changes, please make sure that you fetch the origin! This is very important. You need to do this every time before you write or change any code. Ensure that your file is in the AANNG folder classpath on your computer prior to beginning.
 
 After making changes in your code file, save it -- this is where you can double check that you've added the file to the correct folder. If it is not in the AANNG group folder on your computer, we can't see it!
 
