@@ -1,4 +1,5 @@
 # Detection of SIM Swap Fraud or Duplication
+# Blame: Nava
 
 """
 1. Import JSON library and reader to read files from the network provider on registered SIMs
