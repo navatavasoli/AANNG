@@ -1,4 +1,5 @@
-Pseudocode for the SIM Swap Detection File
+# Pseudocode for the SIM Swap Detection File
+# Blame: Nava
 
 1. Import JSON library and reader to read files from the network provider on registered SIMs
 2. Before parsing, check if user has been authenticated prior to accessing
