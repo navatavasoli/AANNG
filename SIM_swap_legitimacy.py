@@ -95,7 +95,7 @@ while True:
     if 'sims' in bandwidth_data:  # Assuming 'sims' key holds the current SIM data in API response
         detection(bandwidth_data['sims'], registered_iccids)
 
-    time.sleep(3600)
+    time.sleep(3600) # once/hour loop
 
 
 
