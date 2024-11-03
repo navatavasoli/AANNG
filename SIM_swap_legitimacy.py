@@ -91,7 +91,7 @@ while True:
         log_bandwidth_data(bandwidth_data)
         print("Logged bandwidth data:", bandwidth_data)
 
-    # check for suspicious activity
+    # check for suspicious activity (duplication or removal/addition)
     if 'sims' in bandwidth_data:  # Assuming 'sims' key holds the current SIM data in API response
         detection(bandwidth_data['sims'], registered_iccids)
 
