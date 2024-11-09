@@ -2,7 +2,45 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import folium
 import json
-from tkhtmlview import HTMLLabel
+import webbrowser  # Used to open the map in a browser
+from tkinter import messagebox  # Import messagebox explicitly
+
+# Load JSON data and create the map
+def load_map_data_and_display():
+    try:
+        # Load ICCID and coordinates from the generated JSON file
+        json_file_path = 'sample_json_callback.json'  # File name if it's in the same directory
+        with open(json_file_path, 'r') as file:
+            data = json.load(file)
+        
+        # Initialize map (centered on an average location or a specific point)
+        map_center = [37.7749, -122.4194]  # Example center (San Francisco)
+        map_object = folium.Map(location=map_center, zoom_start=5)
+
+        # Add markers for each ICCID location
+        for item in data:
+            iccid = item["ICCID"]
+            lat = item["location"]["latitude"]
+            lon = item["location"]["longitude"]
+            folium.Marker(
+                location=[lat, lon],
+                popup=f"ICCID: {iccid}",
+                tooltip="Click for more info"
+            ).add_to(map_object)
+
+        # Save map to HTML
+        map_file = 'map.html'
+        map_object.save(map_file)
+
+        # Open the map HTML file in the default web browser
+        webbrowser.open(map_file)  # Opens the map in the browser
+
+    except FileNotFoundError:
+        print("Error: JSON file not found.")
+        messagebox.showerror("File Error", "The JSON file was not found.")
+    except Exception as e:
+        print(f"Error: {e}")
+        messagebox.showerror("Error", f"An error occurred: {e}")
 
 # Window configuration and greeting label
 window = tk.Tk()
@@ -36,41 +74,6 @@ load = Image.open(path)
 render = ImageTk.PhotoImage(load)
 window.iconphoto(False, render)
 
-# Function to load coordinates from the JSON file and display the map
-def load_map_data_and_display():
-    # Load ICCID and coordinates from the JSON file
-    json_file_path = 'path/to/your/coordinates.json'  # Replace with your actual JSON file path
-    with open(json_file_path, 'r') as file:
-        data = json.load(file)
-    
-    # Initialize the map (centered on a specific location, or you can calculate the center dynamically)
-    map_center = [37.7749, -122.4194]  # Example center (San Francisco)
-    map_object = folium.Map(location=map_center, zoom_start=10)
-
-    # Add markers for each ICCID location
-    for item in data:
-        iccid = item["ICCID"]
-        lat = item["location"]["latitude"]
-        lon = item["location"]["longitude"]
-        folium.Marker(
-            location=[lat, lon],
-            popup=f"ICCID: {iccid}",
-            tooltip="Click for more info"
-        ).add_to(map_object)
-
-    # Save map to an HTML file
-    map_file = 'map.html'
-    map_object.save(map_file)
-
-    # Create a new window to display the map
-    map_window = tk.Toplevel(window)
-    map_window.title("ICCID Location Map")
-    map_window.geometry("600x400")
-
-    # Display the HTML map in Tkinter using tkhtmlview
-    map_label = HTMLLabel(map_window, html=open(map_file).read())
-    map_label.pack(fill="both", expand=True)
-
 # New window for monitoring sim card activity
 def open_new_window():
     new_window = tk.Toplevel(window)
@@ -79,14 +82,9 @@ def open_new_window():
     tk.Label(new_window, text="Monitoring Sim Card Activity", font=("Helvetica", 14, "bold")).pack(pady=20)
     tk.Label(new_window, text="Here real-time sim card location should show", font=("Helvetica", 12)).pack()
     tk.Label(new_window, text="The ID of the sim card should be here", font=("Helvetica", 12, "bold")).pack()
-    
-    # Add a button in the new window to view the map
-    map_button = tk.Button(
-        new_window, text="View ICCID Map", command=load_map_data_and_display,
-        height=2, width=20, background='#ffffff', foreground='black',
-        font=("Helvetica", 12, "bold")
-    )
-    map_button.pack(pady=10)
+
+    # Add the map button inside the new window for sim card activity
+    tk.Button(new_window, text="View ICCID Map", command=load_map_data_and_display, height=2, width=20, font=("Helvetica", 12)).pack(pady=10)
 
 # New window for sim card history
 def open_new_window2():
@@ -97,7 +95,6 @@ def open_new_window2():
     tk.Label(new_window2, text="Past alerts or location information should be saved here", font=("Helvetica", 12, "bold")).pack()
 
 # New window for Settings (placeholder)
-# We should add an option to see lag time (latency), but there is no rush for this
 def open_new_window3():
     new_window3 = tk.Toplevel(window)
     new_window3.title("Settings")
