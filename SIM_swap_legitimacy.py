@@ -1,20 +1,11 @@
 # Detection of SIM Swap Fraud or Duplication
-# Blame: Nava
 
-"""
-1. Import JSON library and reader to read files from the network provider on registered SIMs
-2. Before parsing, check if user has been authenticated prior to accessing
-3. Measure current bandwidth vs capacity (Bandwidth API) (once an hour, looping function)
-4. Parse JSON file and read data: ICCID and Location of ICCID (use location API) (once an hour)
-5. Function to detect any duplicated ICCID OR a location change of a registered SIM 
-"""
 
 #loop function to continuously read the data
 # SIM cards currently registered in this enterprise's bandwidth 
 # write a function to obtain the SIM of the device from settings OR just have a list and parse the b2andwidth data of registered SIMs in the data 
 
 # import the JSON file, parse the JSON file loop once every hour 
-
 
 # Pseudocode *INTERNAL*
 # Assumption: All devices under bandwidth enterprise network have registered SIM IDs (ICCIDs) under a JSON file
@@ -23,19 +14,44 @@ import numpy as np
 import time
 import requests
 from datetime import datetime
+from cryptography.fernet import Fernet
 
 # initialize JSON file containing the registed SIMs (assume provided by network)
 json_file_path = 'registered_sims.json'
 
+# generate a key and instantiate a Fernet object
+try:
+    with open('encryption_key.key', 'rb') as key_file:
+        key = key_file.read()
+except FileNotFoundError:
+    key = Fernet.generate_key()
+    with open('encryption_key.key', 'wb') as key_file:
+        key_file.write(key)
+
+cipher = Fernet(key)
+
+# encrypt data and save to file
+def encrypt_and_save_data(data, file_path):
+    json_data = json.dumps(data)  # convert data to JSON string
+    encrypted_data = cipher.encrypt(json_data.encode())  # encrypt JSON string
+    with open(file_path, 'wb') as encrypted_file:
+        encrypted_file.write(encrypted_data)
+
+# decrypt and load data from file
+def load_and_decrypt_data(file_path):
+    try:
+        with open(file_path, 'rb') as encrypted_file:
+            encrypted_data = encrypted_file.read()
+        decrypted_data = cipher.decrypt(encrypted_data).decode()
+        return np.array(json.loads(decrypted_data))
+    except Exception as e:
+        print(f"Error loading encrypted ICCIDs: {e}")
+        return np.array([])
+
 # put data into a NumPy array
 def load_iccids(file_path):
-    try:
-        with open(file_path, 'r') as json_file:
-            registered_iccids = json.load(json_file)
-        return np.array(registered_iccids)
-    except Exception as e:
-        print(f"Error loading ICCIDs: {e}")
-        return np.array([])
+    # Load and decrypt data from JSON file containing registered SIMs
+    return load_and_decrypt_data(file_path)
 
 # configure Shabodi's Bandwidth API
 API_URL = "https://api.shabodi.com/bandwidth"  
@@ -96,8 +112,3 @@ while True:
         detection(bandwidth_data['sims'], registered_iccids)
 
     time.sleep(3600) # once/hour loop
-
-
-
-
-
