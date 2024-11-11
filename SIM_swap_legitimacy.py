@@ -1,13 +1,3 @@
-# Detection of SIM Swap Fraud or Duplication
-
-
-#loop function to continuously read the data
-# SIM cards currently registered in this enterprise's bandwidth 
-# write a function to obtain the SIM of the device from settings OR just have a list and parse the b2andwidth data of registered SIMs in the data 
-
-# import the JSON file, parse the JSON file loop once every hour 
-
-# Pseudocode *INTERNAL*
 # Assumption: All devices under bandwidth enterprise network have registered SIM IDs (ICCIDs) under a JSON file
 import json
 import numpy as np
