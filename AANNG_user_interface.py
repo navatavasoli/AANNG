@@ -19,7 +19,7 @@ photo = ImageTk.PhotoImage(resized_image)
 
 # greeting labels 
 greeting = tk.Label(
-    text=" Welcome To AANNG Sim Swap Fraud Alert Application!",
+    text=" Welcome To AANNG's SIM Fraud Alert Application!",
     background='#ffffff', foreground='black', image=photo, compound='left',
     font=("Helvetica", 16, "bold")
 )
