@@ -19,7 +19,7 @@ photo = ImageTk.PhotoImage(resized_image)
 
 # greeting labels 
 greeting = tk.Label(
-    text=" Welcome To AANNG's SIM Fraud Alert Application!",
+    text=" Welcome To AANNG Sim Swap Fraud Alert Application!",
     background='#ffffff', foreground='black', image=photo, compound='left',
     font=("Helvetica", 16, "bold")
 )
@@ -81,23 +81,23 @@ def open_new_window():
     
     json_file_path = 'sample_json_callback.json'
     
-    # check if the JSON file exists
+    # Check if the JSON file exists
     if not os.path.exists(json_file_path):
         messagebox.showerror("File Error", "The JSON file with SIM data was not found.")
         return
     
-    # load the JSON data and display it
+    # Load the JSON data and display it
     with open(json_file_path, 'r') as file:
         sim_data = json.load(file)
     
-    # create a text widget to display the JSON data in the new window
+    # Create a text widget to display the JSON data in the new window
     text_widget = tk.Text(new_window, wrap='word', font=("Helvetica", 10))
     text_widget.pack(expand=True, fill='both')
     
-    # insert formatted JSON data into the text widget
+    # Insert formatted JSON data into the text widget
     formatted_data = json.dumps(sim_data, indent=4)
     text_widget.insert(tk.END, formatted_data)
-    text_widget.config(state=tk.DISABLED)  # make the text widget read-only
+    text_widget.config(state=tk.DISABLED)  # Make the text widget read-only
 
 # new window for sim card history
 def open_new_window2():
