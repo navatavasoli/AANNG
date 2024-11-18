@@ -21,7 +21,7 @@ photo = ImageTk.PhotoImage(resized_image)
 
 # greeting labels
 greeting = tk.Label(
-    text=" Welcome To AANNG Sim Swap Fraud Alert Application!",
+    text=" Welcome To AANNG Sim Swap Fraud Alert Application",
     background='#ffffff', foreground='black', image=photo, compound='left',
     font=("Helvetica", 16, "bold")
 )
@@ -143,22 +143,22 @@ def open_new_window():
     new_window = tk.Toplevel(window)
     new_window.title("Monitoring Sim Card Activity")
     new_window.geometry("400x300")
-    
+
     json_file_path = 'sample_json_callback.json'
-    
+
     # Check if the JSON file exists
     if not os.path.exists(json_file_path):
         messagebox.showerror("File Error", "The JSON file with SIM data was not found.")
         return
-    
+
     # Load the JSON data and display it
     with open(json_file_path, 'r') as file:
         sim_data = json.load(file)
-    
+
     # Create a text widget to display the JSON data in the new window
     text_widget = tk.Text(new_window, wrap='word', font=("Helvetica", 10))
     text_widget.pack(expand=True, fill='both')
-    
+
     # Insert formatted JSON data into the text widget
     formatted_data = json.dumps(sim_data, indent=4)
     text_widget.insert(tk.END, formatted_data)
@@ -182,21 +182,25 @@ def open_new_window3():
 # create buttons with larger font size and dimensions
 buttons = [
     tk.Button(
-        window, text="Monitor Sim Card Activity", command=open_new_window, 
-        height=3, width=25, background='#ffffff', foreground='black', 
+        window, text="Monitor Sim Card Activity", command=open_new_window,
+        height=3, width=25, background='#ffffff', foreground='black',
         font=("Helvetica", 14, "bold")
-    ),
+    ).pack(pady=10),
     tk.Button(
-        window, text="Review Sim Card History", command=open_new_window2, 
-        height=3, width=25, background='#ffffff', foreground='black', 
+        window, text="Review Sim Card History", command=open_new_window2,
+        height=3, width=25, background='#ffffff', foreground='black',
         font=("Helvetica", 14, "bold")
-    ),
+    ).pack(pady=10),
     tk.Button(
-        window, text="Settings", command=open_new_window3, 
-        height=3, width=25, background='#ffffff', foreground='black', 
+        window, text="Settings", command=open_new_window3,
+        height=3, width=25, background='#ffffff', foreground='black',
         font=("Helvetica", 14, "bold")
-    ),
+    ).pack(pady=10),
     tk.Button(
-        window, text="View ICCID Map", command=load_map_data_and_display, 
-        height=3, width=25, background='#ffffff', foreground='black', 
+        window, text="View ICCID Map", command=load_map_data_and_display,
+        height=3, width=25, background='#ffffff', foreground='black',
         font=("Helvetica", 14, "bold")
+    ).pack(pady=10)
+]
+
+window.mainloop()
