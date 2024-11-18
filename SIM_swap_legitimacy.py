@@ -43,6 +43,7 @@ def load_iccids(file_path):
 
 # Bandwidth API configuration
 API_URL = "http://127.0.0.1:7999/qos/v1/bandwidth"
+LOCATION_API_URL = "http://127.0.0.1:7999/location/v1/center"
 DEVICE_ID = "17"  # Set the device ID you want to query
 AEP_HOST = "192.168.3.18"  # Shabodi server IP
 CLIENT_ID = "380dfca1-6539-4890-9595-21a57c8f907d"
@@ -69,23 +70,61 @@ def get_token(client_id, client_secret):
         print("Failed to retrieve token:", response.status_code, response.json())
         return None
 
-# Function to fetch bandwidth data using the API
-def fetch_bandwidth_data(token):
+# Function to fetch the device's location
+def fetch_device_location(token, device_id):
     try:
         headers = {
             "Authorization": f"Bearer {token}",
             "accept": "application/json"
         }
-        response = requests.get(f"{API_URL}?deviceId={DEVICE_ID}", headers=headers)
+        response = requests.get(f"{LOCATION_API_URL}?deviceId={device_id}", headers=headers)
 
         if response.status_code == 200:
-            return response.json()  # Parse and return JSON response
+            location_data = response.json()
+            if "location" in location_data:
+                device_location = location_data["location"][0]
+                return device_location  # Return device's latitude, longitude, and altitude
+            else:
+                print(f"Failed to retrieve location: {response.status_code}, {response.json()}")
+                return None
         else:
-            print(f"API request failed with status code {response.status_code}")
-            print(f"Response: {response.text}")
+            print(f"Failed to fetch device location: {response.status_code}")
             return None
     except requests.exceptions.RequestException as e:
-        print(f"API request failed: {e}")
+        print(f"Error fetching location: {e}")
+        return None
+
+# Function to verify the location within a specific area
+def verify_device_location(token, device_id, latitude, longitude, radius):
+    try:
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "accept": "application/json"
+        }
+        body = {
+            "device": {
+                "deviceId": device_id
+            },
+            "area": {
+                "areaType": "CIRCLE",
+                "center": {
+                    "latitude": latitude,
+                    "longitude": longitude
+                },
+                "radius": radius
+            },
+            "maxAge": 120  # maxAge in seconds, adjust if needed
+        }
+        response = requests.post(f"{LOCATION_API_URL}/verify", headers=headers, json=body)
+
+        if response.status_code == 200:
+            verification_result = response.json()
+            return verification_result
+        else:
+            print(f"Failed to verify device location: {response.status_code}, {response.json()}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Error verifying location: {e}")
         return None
 
 # Log bandwidth data
@@ -130,5 +169,19 @@ if __name__ == "__main__":
             # Check for suspicious activity (duplication or removal/addition)
             if 'sessions' in bandwidth_data:  # Assuming 'sessions' key holds the current SIM data in API response
                 detection(bandwidth_data['sessions'], registered_iccids)
+
+            # Fetch device location (for example, device ID 17)
+            device_location = fetch_device_location(token, DEVICE_ID)
+            if device_location:
+                print(f"Device {DEVICE_ID} location: Latitude={device_location['latitude']}, Longitude={device_location['longitude']}, Altitude={device_location['altitude']}")
+
+                # Verify if the device is within a specified area (e.g., 50 km radius from a center point)
+                center_latitude = 50.735851
+                center_longitude = 7.10066
+                radius = 50000  # 50 km radius
+
+                location_verification = verify_device_location(token, DEVICE_ID, center_latitude, center_longitude, radius)
+                if location_verification:
+                    print(f"Location verification result: {location_verification['verificationResult']}")
 
             time.sleep(3600)  # Loop every hour
