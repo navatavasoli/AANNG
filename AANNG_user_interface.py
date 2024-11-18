@@ -21,7 +21,7 @@ photo = ImageTk.PhotoImage(resized_image)
 
 # greeting labels
 greeting = tk.Label(
-    text=" Welcome To AANNG Sim Swap Fraud Alert Application",
+    text=" Welcome To AANNG Sim Swap Fraud Alert Application!",
     background='#ffffff', foreground='black', image=photo, compound='left',
     font=("Helvetica", 16, "bold")
 )
@@ -40,7 +40,7 @@ load = Image.open(path)
 render = ImageTk.PhotoImage(load)
 window.iconphoto(False, render)
 
-# function to load and decrypt ICCID data from JSON file
+# Function to load and decrypt ICCID data from JSON file
 def load_and_decrypt_data(file_path):
     try:
         with open(file_path, 'rb') as encrypted_file:
@@ -74,7 +74,7 @@ def limit_bandwidth_for_sim(iccid):
         print(f"Error limiting bandwidth: {e}")
         messagebox.showerror("Error", "An error occurred while limiting bandwidth.")
 
-# function to detect fraudulent activity (unregistered or location-swapped SIM cards)
+# Function to detect fraudulent activity (unregistered or location-swapped SIM cards)
 def detection(current_iccid_data, registered_iccids, window):
     detected_issues = []
     for entry in current_iccid_data:
@@ -97,7 +97,7 @@ def detection(current_iccid_data, registered_iccids, window):
             if iccid_to_limit:
                 limit_bandwidth_for_sim(iccid_to_limit)
 
-# function to load JSON data and display map
+# Function to load JSON data and display map
 def load_map_data_and_display():
     # check that the JSON file exists in the same directory as the script
     json_file_path = 'sample_json_callback.json'
@@ -138,7 +138,7 @@ def load_map_data_and_display():
     # open the map in the default web browser
     webbrowser.open(f'file://{os.path.realpath(map_file)}')
 
-# new window for monitoring sim card activity
+# New window for monitoring sim card activity
 def open_new_window():
     new_window = tk.Toplevel(window)
     new_window.title("Monitoring Sim Card Activity")
@@ -164,43 +164,92 @@ def open_new_window():
     text_widget.insert(tk.END, formatted_data)
     text_widget.config(state=tk.DISABLED)  # Make the text widget read-only
 
-# new window for sim card history
+# New window for sim card history
 def open_new_window2():
     new_window2 = tk.Toplevel(window)
-    new_window2.title("Review Sim Card History")
-    new_window2.geometry("300x200")
+    new_window2.title("Sim Card History")
+    new_window2.geometry("400x300")
     tk.Label(new_window2, text="Sim Card History", font=("Helvetica", 14, "bold")).pack(pady=20)
     tk.Label(new_window2, text="Past alerts or location information should be saved here", font=("Helvetica", 12, "bold")).pack()
 
-# new window for Settings (placeholder)
-def open_new_window3():
-    new_window3 = tk.Toplevel(window)
-    new_window3.title("Settings")
-    new_window3.geometry("300x200")
-    tk.Label(new_window3, text="Settings", font=("Helvetica", 14, "bold")).pack(pady=20)
+# New window for Settings (placeholder)
+def open_settings_window():
+    settings_window = tk.Toplevel(window)
+    settings_window.title("Settings")
+    settings_window.geometry("400x300")
 
-# create buttons with larger font size and dimensions
-buttons = [
+    tk.Label(settings_window, text="API Information", font=("Helvetica", 14, "bold")).pack(pady=20)
+
+    # Create buttons for each API info
     tk.Button(
-        window, text="Monitor Sim Card Activity", command=open_new_window,
-        height=3, width=25, background='#ffffff', foreground='black',
-        font=("Helvetica", 14, "bold")
-    ).pack(pady=10),
-    tk.Button(
-        window, text="Review Sim Card History", command=open_new_window2,
-        height=3, width=25, background='#ffffff', foreground='black',
-        font=("Helvetica", 14, "bold")
-    ).pack(pady=10),
-    tk.Button(
-        window, text="Settings", command=open_new_window3,
-        height=3, width=25, background='#ffffff', foreground='black',
-        font=("Helvetica", 14, "bold")
-    ).pack(pady=10),
-    tk.Button(
-        window, text="View ICCID Map", command=load_map_data_and_display,
+        settings_window, text="Bandwidth API Info", command=lambda: open_api_window("Bandwidth"),
         height=3, width=25, background='#ffffff', foreground='black',
         font=("Helvetica", 14, "bold")
     ).pack(pady=10)
-]
 
+    tk.Button(
+        settings_window, text="Location API Info", command=lambda: open_api_window("Location"),
+        height=3, width=25, background='#ffffff', foreground='black',
+        font=("Helvetica", 14, "bold")
+    ).pack(pady=10)
+
+    tk.Button(
+        settings_window, text="SIM Swap API Info", command=lambda: open_api_window("SIM Swap"),
+        height=3, width=25, background='#ffffff', foreground='black',
+        font=("Helvetica", 14, "bold")
+    ).pack(pady=10)
+
+    tk.Button(
+        settings_window, text="Latency API Info", command=lambda: open_api_window("Latency"),
+        height=3, width=25, background='#ffffff', foreground='black',
+        font=("Helvetica", 14, "bold")
+    ).pack(pady=10)
+
+# Function to open a text file with API info
+def open_api_window(api_name):
+    new_window = tk.Toplevel(window)
+    new_window.title(f"{api_name} API Information")
+    new_window.geometry("400x300")
+
+    # Simulate loading a text file based on API name
+    file_name = f"{api_name.lower()}_api.txt"
+    if os.path.exists(file_name):
+        with open(file_name, 'r') as file:
+            file_content = file.read()
+
+        # Create a Text widget to display file content
+        text_widget = tk.Text(new_window, wrap='word', font=("Helvetica", 10))
+        text_widget.pack(expand=True, fill='both')
+
+        text_widget.insert(tk.END, file_content)
+        text_widget.config(state=tk.DISABLED)  # Make the text widget read-only
+    else:
+        messagebox.showerror("File Not Found", f"{file_name} does not exist.")
+
+# Initial buttons on the main window
+tk.Button(
+    window, text="Monitor Sim Card Activity", command=open_new_window,
+    height=3, width=25, background='#ffffff', foreground='black',
+    font=("Helvetica", 14, "bold")
+).pack(pady=10)
+
+tk.Button(
+    window, text="Review Sim Card History", command=open_new_window2,
+    height=3, width=25, background='#ffffff', foreground='black',
+    font=("Helvetica", 14, "bold")
+).pack(pady=10)
+
+tk.Button(
+    window, text="Settings", command=open_settings_window,
+    height=3, width=25, background='#ffffff', foreground='black',
+    font=("Helvetica", 14, "bold")
+).pack(pady=10)
+
+tk.Button(
+    window, text="View ICCID Map", command=load_map_data_and_display,
+    height=3, width=25, background='#ffffff', foreground='black',
+    font=("Helvetica", 14, "bold")
+).pack(pady=10)
+
+# Start the Tkinter main loop
 window.mainloop()
