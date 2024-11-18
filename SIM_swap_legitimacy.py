@@ -44,16 +44,40 @@ def load_iccids(file_path):
 # Bandwidth API configuration
 API_URL = "http://127.0.0.1:7999/qos/v1/bandwidth"
 DEVICE_ID = "17"  # Set the device ID you want to query
-API_HEADERS = {
-    "accept": "application/json"
-}
+AEP_HOST = "192.168.3.18"  # Shabodi server IP
+CLIENT_ID = "380dfca1-6539-4890-9595-21a57c8f907d"
+CLIENT_SECRET = "enMKQcRauITqqdsDGsbNDUN_JlNgLYQkkdPhe5IF8Ws"
 
-# Fetch bandwidth data using API
-def fetch_bandwidth_data():
+# Function to request the access token
+def get_token(client_id, client_secret):
+    url = f"http://{AEP_HOST}:31002/security/v1/token"  # Adjusted port and endpoint
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "client_id": client_id,
+        "client_secret": client_secret
+    }
+
+    # Making the POST request to obtain the token
+    response = requests.post(url, headers=headers, json=data, verify=False)
+    if response.status_code == 200:
+        token = response.json().get("access_token")
+        print("Access Token:", token)
+        return token
+    else:
+        print("Failed to retrieve token:", response.status_code, response.json())
+        return None
+
+# Function to fetch bandwidth data using the API
+def fetch_bandwidth_data(token):
     try:
-        # Include deviceId in the query string
-        response = requests.get(f"{API_URL}?deviceId={DEVICE_ID}", headers=API_HEADERS)
-        
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "accept": "application/json"
+        }
+        response = requests.get(f"{API_URL}?deviceId={DEVICE_ID}", headers=headers)
+
         if response.status_code == 200:
             return response.json()  # Parse and return JSON response
         else:
@@ -76,7 +100,7 @@ def detection(current_iccid_data, registered_iccids):
     for entry in current_iccid_data:
         iccid = entry.get('iccid')
         location = entry.get('location')
-        
+
         if iccid not in registered_iccids:
             detected_issues.append(f"Unregistered SIM detected in network: {iccid}, {iccid}: {location}")
         else:
@@ -88,19 +112,23 @@ def detection(current_iccid_data, registered_iccids):
         print("Detected SIM issues:", detected_issues)
 
 # Main loop to perform checks once an hour
-while True:
-    # Update registered ICCID information from network
-    registered_iccids = load_iccids(json_file_path)
-    print("Registered ICCIDs:", registered_iccids)
+if __name__ == "__main__":
+    token = get_token(CLIENT_ID, CLIENT_SECRET)  # Get the token
 
-    # Fetch current bandwidth data
-    bandwidth_data = fetch_bandwidth_data()
-    if bandwidth_data:
-        log_bandwidth_data(bandwidth_data)
-        print("Logged bandwidth data:", bandwidth_data)
+    if token:
+        while True:
+            # Update registered ICCID information from network
+            registered_iccids = load_iccids(json_file_path)
+            print("Registered ICCIDs:", registered_iccids)
 
-    # Check for suspicious activity (duplication or removal/addition)
-    if 'sessions' in bandwidth_data:  # Assuming 'sessions' key holds the current SIM data in API response
-        detection(bandwidth_data['sessions'], registered_iccids)
+            # Fetch current bandwidth data using the token
+            bandwidth_data = fetch_bandwidth_data(token)
+            if bandwidth_data:
+                log_bandwidth_data(bandwidth_data)
+                print("Logged bandwidth data:", bandwidth_data)
 
-    time.sleep(3600)  # Loop every hour
+            # Check for suspicious activity (duplication or removal/addition)
+            if 'sessions' in bandwidth_data:  # Assuming 'sessions' key holds the current SIM data in API response
+                detection(bandwidth_data['sessions'], registered_iccids)
+
+            time.sleep(3600)  # Loop every hour
