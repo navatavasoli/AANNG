@@ -6,7 +6,7 @@ import json
 import os
 import webbrowser  # open the map in the web browser
 
-# window configuration and greeting label
+# owindow configuration and greeting label
 window = tk.Tk()
 window.configure(bg="#017cfe")  # shabodi color background
 window.geometry("500x500")
