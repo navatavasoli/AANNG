@@ -40,7 +40,7 @@ load = Image.open(path)
 render = ImageTk.PhotoImage(load)
 window.iconphoto(False, render)
 
-# Function to load and decrypt ICCID data from JSON file
+# load and decrypt ICCID data from JSON file
 def load_and_decrypt_data(file_path):
     try:
         with open(file_path, 'rb') as encrypted_file:
@@ -53,16 +53,16 @@ def load_and_decrypt_data(file_path):
         print(f"Error loading encrypted ICCIDs: {e}")
         return np.array([])
 
-# Function to limit bandwidth for a specific SIM using API
+# bandwidth choking for a fraudulent SIM using API
 def limit_bandwidth_for_sim(iccid):
-    url = 'http://127.0.0.1:7999/qos/v1/bandwidth'  # Bandwidth API endpoint
+    url = 'http://127.0.0.1:7999/qos/v1/bandwidth'  # bandwidth API endpoint
     data = {
-        "iccid": iccid,  # The ICCID of the fraudulent SIM
-        "action": "limit",  # Action to limit bandwidth
-        "limit": "128kbps"  # Set a lower bandwidth limit, modify as necessary
+        "iccid": iccid,  # suspicious SIM's ICCID
+        "action": "limit",  # limit bandwidth
+        "limit": "128kbps"  # set a lower bandwidth limit (arbitrary)
     }
 
-    # Send API request to limit bandwidth
+    # send API request to limit bandwidth
     try:
         response = requests.post(url, json=data)
         response_data = response.json()
@@ -74,7 +74,7 @@ def limit_bandwidth_for_sim(iccid):
         print(f"Error limiting bandwidth: {e}")
         messagebox.showerror("Error", "An error occurred while limiting bandwidth.")
 
-# Function to detect fraudulent activity (unregistered or location-swapped SIM cards)
+# detect fraudulent activity (unregistered or location-swapped SIM cards)
 def detection(current_iccid_data, registered_iccids, window):
     detected_issues = []
     for entry in current_iccid_data:
@@ -90,14 +90,14 @@ def detection(current_iccid_data, registered_iccids, window):
                 detected_issues.append(f"Location change detected for SIM {iccid}: {location}")
 
     if detected_issues:
-        # Show an alert in the Tkinter window
+        # alert in the Tkinter window
         if messagebox.askyesno("Fraudulent Activity Detected", "\n".join(detected_issues) + "\nDo you want to limit the bandwidth?"):
             # If user chooses yes, prompt for action to limit bandwidth
             iccid_to_limit = messagebox.askstring("Limit Bandwidth", "Enter ICCID to limit bandwidth:")
             if iccid_to_limit:
                 limit_bandwidth_for_sim(iccid_to_limit)
 
-# Function to load JSON data and display map
+# load JSON data and display map
 def load_map_data_and_display():
     # check that the JSON file exists in the same directory as the script
     json_file_path = 'sample_json_callback.json'
@@ -113,11 +113,11 @@ def load_map_data_and_display():
     # load registered SIM ICCIDs from the second script
     registered_iccids = load_and_decrypt_data('registered_sims.json')
 
-    # Check for fraudulent activity
+    # check for fraudulent activity
     detection(data, registered_iccids, window)
 
     # initialize map (centered on an average location or a specific point)
-    map_center = [37.7749, -122.4194]  # Example center (San Francisco)
+    map_center = [37.7749, -122.4194]  # ex. center (San Francisco)
     map_object = folium.Map(location=map_center, zoom_start=5)
 
     # add markers for each ICCID location
@@ -138,7 +138,7 @@ def load_map_data_and_display():
     # open the map in the default web browser
     webbrowser.open(f'file://{os.path.realpath(map_file)}')
 
-# New window for monitoring sim card activity
+# window for monitoring sim card activity
 def open_new_window():
     new_window = tk.Toplevel(window)
     new_window.title("Monitoring Sim Card Activity")
@@ -146,25 +146,25 @@ def open_new_window():
 
     json_file_path = 'sample_json_callback.json'
 
-    # Check if the JSON file exists
+    # check if the JSON file exists
     if not os.path.exists(json_file_path):
         messagebox.showerror("File Error", "The JSON file with SIM data was not found.")
         return
 
-    # Load the JSON data and display it
+    # load and display JSON data
     with open(json_file_path, 'r') as file:
         sim_data = json.load(file)
 
-    # Create a text widget to display the JSON data in the new window
+    # create a text widget to display the JSON data in new window
     text_widget = tk.Text(new_window, wrap='word', font=("Helvetica", 10))
     text_widget.pack(expand=True, fill='both')
 
-    # Insert formatted JSON data into the text widget
+    # insert formatted JSON data into text widget
     formatted_data = json.dumps(sim_data, indent=4)
     text_widget.insert(tk.END, formatted_data)
-    text_widget.config(state=tk.DISABLED)  # Make the text widget read-only
+    text_widget.config(state=tk.DISABLED)  # make the text widget read-only
 
-# New window for sim card history
+# new window for sim card history
 def open_new_window2():
     new_window2 = tk.Toplevel(window)
     new_window2.title("Sim Card History")
@@ -172,7 +172,7 @@ def open_new_window2():
     tk.Label(new_window2, text="Sim Card History", font=("Helvetica", 14, "bold")).pack(pady=20)
     tk.Label(new_window2, text="Past alerts or location information should be saved here", font=("Helvetica", 12, "bold")).pack()
 
-# New window for Settings (placeholder)
+# new window for Settings (placeholder)
 def open_settings_window():
     settings_window = tk.Toplevel(window)
     settings_window.title("Settings")
@@ -180,7 +180,7 @@ def open_settings_window():
 
     tk.Label(settings_window, text="API Information", font=("Helvetica", 14, "bold")).pack(pady=20)
 
-    # Create buttons for each API info
+    # create buttons for each API info
     tk.Button(
         settings_window, text="Bandwidth API Info", command=lambda: open_api_window("Bandwidth"),
         height=3, width=25, background='#ffffff', foreground='black',
@@ -205,28 +205,28 @@ def open_settings_window():
         font=("Helvetica", 14, "bold")
     ).pack(pady=10)
 
-# Function to open a text file with API info
+# function to open a text file with API info
 def open_api_window(api_name):
     new_window = tk.Toplevel(window)
     new_window.title(f"{api_name} API Information")
     new_window.geometry("400x300")
 
-    # Simulate loading a text file based on API name
+    # simulate loading a text file based on API name
     file_name = f"{api_name.lower()}_api.txt"
     if os.path.exists(file_name):
         with open(file_name, 'r') as file:
             file_content = file.read()
 
-        # Create a Text widget to display file content
+        # display text file content in the window
         text_widget = tk.Text(new_window, wrap='word', font=("Helvetica", 10))
         text_widget.pack(expand=True, fill='both')
 
         text_widget.insert(tk.END, file_content)
-        text_widget.config(state=tk.DISABLED)  # Make the text widget read-only
+        text_widget.config(state=tk.DISABLED)  # read only
     else:
         messagebox.showerror("File Not Found", f"{file_name} does not exist.")
 
-# Initial buttons on the main window
+# initial buttons on the main window
 tk.Button(
     window, text="Monitor Sim Card Activity", command=open_new_window,
     height=3, width=25, background='#ffffff', foreground='black',
@@ -251,5 +251,5 @@ tk.Button(
     font=("Helvetica", 14, "bold")
 ).pack(pady=10)
 
-# Start the Tkinter main loop
+# start main loop
 window.mainloop()
