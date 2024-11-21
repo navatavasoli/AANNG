@@ -70,7 +70,7 @@ def get_token(client_id, client_secret):
         print("Failed to retrieve token:", response.status_code, response.json())
         return None
 
-# Function to fetch the device's location
+# fetch the device's location
 def fetch_device_location(token, device_id):
     try:
         headers = {
@@ -83,7 +83,7 @@ def fetch_device_location(token, device_id):
             location_data = response.json()
             if "location" in location_data:
                 device_location = location_data["location"][0]
-                return device_location  # Return device's latitude, longitude, and altitude
+                return device_location  # return device latitude, longitude, and altitude
             else:
                 print(f"Failed to retrieve location: {response.status_code}, {response.json()}")
                 return None
@@ -94,7 +94,7 @@ def fetch_device_location(token, device_id):
         print(f"Error fetching location: {e}")
         return None
 
-# Function to verify the location within a specific area
+# verify the location within a specific area
 def verify_device_location(token, device_id, latitude, longitude, radius):
     try:
         headers = {
@@ -150,32 +150,29 @@ def detection(current_iccid_data, registered_iccids):
     if detected_issues:
         print("Detected SIM issues:", detected_issues)
 
-# Main loop to perform checks once an hour
+        # space to accept the SIM Swap
+
 if __name__ == "__main__":
     token = get_token(CLIENT_ID, CLIENT_SECRET)  # Get the token
 
     if token:
         while True:
-            # Update registered ICCID information from network
             registered_iccids = load_iccids(json_file_path)
             print("Registered ICCIDs:", registered_iccids)
 
-            # Fetch current bandwidth data using the token
+            # fetch current data with token
             bandwidth_data = fetch_bandwidth_data(token)
             if bandwidth_data:
                 log_bandwidth_data(bandwidth_data)
                 print("Logged bandwidth data:", bandwidth_data)
 
-            # Check for suspicious activity (duplication or removal/addition)
-            if 'sessions' in bandwidth_data:  # Assuming 'sessions' key holds the current SIM data in API response
+            if 'sessions' in bandwidth_data:
                 detection(bandwidth_data['sessions'], registered_iccids)
 
-            # Fetch device location (for example, device ID 17)
             device_location = fetch_device_location(token, DEVICE_ID)
             if device_location:
                 print(f"Device {DEVICE_ID} location: Latitude={device_location['latitude']}, Longitude={device_location['longitude']}, Altitude={device_location['altitude']}")
 
-                # Verify if the device is within a specified area (e.g., 50 km radius from a center point)
                 center_latitude = 50.735851
                 center_longitude = 7.10066
                 radius = 50000  # 50 km radius
@@ -184,4 +181,4 @@ if __name__ == "__main__":
                 if location_verification:
                     print(f"Location verification result: {location_verification['verificationResult']}")
 
-            time.sleep(3600)  # Loop every hour
+            time.sleep(3600)  # hourly loop
