@@ -19,7 +19,7 @@ except FileNotFoundError:
 
 cipher = Fernet(key)
 
-# Encrypt data and save to file
+# encrypt data and save to file
 def encrypt_and_save_data(data, file_path):
     json_data = json.dumps(data)  # convert data to JSON string
     encrypted_data = cipher.encrypt(json_data.encode())  # encrypt JSON string
@@ -32,7 +32,7 @@ def load_and_decrypt_data(file_path):
         with open(file_path, 'rb') as encrypted_file:
             encrypted_data = encrypted_file.read()
         decrypted_data = cipher.decrypt(encrypted_data).decode()
-        return np.array(json.loads(decrypted_data))
+     #   return np.array(json.loads(decrypted_data))
     except Exception as e:
         print(f"Error loading encrypted ICCIDs: {e}")
         return np.array([])

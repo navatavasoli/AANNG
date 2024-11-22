@@ -4,9 +4,8 @@ from PIL import Image, ImageTk
 import folium
 import json
 import os
-import webbrowser  # open the map in the web browser
-import numpy as np
-import requests  # For API call to limit bandwidth
+import webbrowser
+import requests
 
 # window configuration and greeting label
 window = tk.Tk()
@@ -46,9 +45,9 @@ def load_and_decrypt_data(file_path):
         with open(file_path, 'rb') as encrypted_file:
             encrypted_data = encrypted_file.read()
         # Load encrypted data and decrypt it
-        cipher = Fernet(key)
-        decrypted_data = cipher.decrypt(encrypted_data).decode()
-        return np.array(json.loads(decrypted_data))
+        # cipher = Fernet(key)
+        # decrypted_data = cipher.decrypt(encrypted_data).decode()
+        # return np.array(json.loads(decrypted_data))
     except Exception as e:
         print(f"Error loading encrypted ICCIDs: {e}")
         return np.array([])
@@ -90,15 +89,36 @@ def detection(current_iccid_data, registered_iccids, window):
                 detected_issues.append(f"Location change detected for SIM {iccid}: {location}")
 
     if detected_issues:
-        # alert in the Tkinter window
-        if messagebox.askyesno("Fraudulent Activity Detected", "\n".join(detected_issues) + "\nDo you want to limit the bandwidth?"):
-            # If user chooses yes, prompt for action to limit bandwidth
-            iccid_to_limit = messagebox.askstring("Limit Bandwidth", "Enter ICCID to limit bandwidth:")
-            if iccid_to_limit:
-                limit_bandwidth_for_sim(iccid_to_limit)
+        # Create a pop-up alert for fraudulent activity detection
+        if messagebox.askyesno(
+            "Fraudulent Activity Detected",
+            "\n".join(detected_issues) + "\nDo you want to accept the SIM swap?"
+        ):
+            # If user chooses yes, process SIM swap acceptance
+            iccid_to_swap = messagebox.askstring("Accept SIM Swap", "Enter ICCID to accept SIM swap:")
+            if iccid_to_swap:
+                process_sim_swap_acceptance(iccid_to_swap)
+        else:
+            # Optionally, limit bandwidth if swap is not accepted
+            if messagebox.askyesno("Limit Bandwidth", "Do you want to limit the bandwidth for this SIM?"):
+                iccid_to_limit = messagebox.askstring("Limit Bandwidth", "Enter ICCID to limit bandwidth:")
+                if iccid_to_limit:
+                    limit_bandwidth_for_sim(iccid_to_limit)
+
+# Process SIM swap acceptance
+def process_sim_swap_acceptance(iccid):
+    try:
+        # Simulate an API call or log the acceptance
+        log_message = f"SIM swap accepted for ICCID: {iccid}"
+        print(log_message)  # For demonstration; replace with an API call or database update
+        with open("sim_swap_log.txt", "a") as log_file:
+            log_file.write(f"{log_message}\n")
+        messagebox.showinfo("SIM Swap Accepted", f"SIM swap successfully accepted for ICCID: {iccid}")
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to process SIM swap acceptance: {e}")
 
 # load JSON data and display map
-def load_map_data_and_display():
+def view_iccid_map():
     # check that the JSON file exists in the same directory as the script
     json_file_path = 'sample_json_callback.json'
 
@@ -109,12 +129,6 @@ def load_map_data_and_display():
     # load ICCID and coordinates from JSON file
     with open(json_file_path, 'r') as file:
         data = json.load(file)
-
-    # load registered SIM ICCIDs from the second script
-    registered_iccids = load_and_decrypt_data('registered_sims.json')
-
-    # check for fraudulent activity
-    detection(data, registered_iccids, window)
 
     # initialize map (centered on an average location or a specific point)
     map_center = [37.7749, -122.4194]  # ex. center (San Francisco)
@@ -199,57 +213,44 @@ def open_settings_window():
         font=("Helvetica", 14, "bold")
     ).pack(pady=10)
 
-    tk.Button(
-        settings_window, text="Latency API Info", command=lambda: open_api_window("Latency"),
-        height=3, width=25, background='#ffffff', foreground='black',
-        font=("Helvetica", 14, "bold")
-    ).pack(pady=10)
+def open_api_window(api_type):
+    api_window = tk.Toplevel(window)
+    api_window.title(f"{api_type} API Information")
+    api_window.geometry("400x300")
+    tk.Label(api_window, text=f"{api_type} API Information", font=("Helvetica", 14, "bold")).pack(pady=20)
 
-# function to open a text file with API info
-def open_api_window(api_name):
-    new_window = tk.Toplevel(window)
-    new_window.title(f"{api_name} API Information")
-    new_window.geometry("400x300")
+# exit button configuration
+exit_button = tk.Button(window, text="Exit", command=window.quit, height=3, width=25, background='#ffffff', foreground='black',
+                        font=("Helvetica", 14, "bold"))
+exit_button.pack(pady=10)
 
-    # simulate loading a text file based on API name
-    file_name = f"{api_name.lower()}_api.txt"
-    if os.path.exists(file_name):
-        with open(file_name, 'r') as file:
-            file_content = file.read()
-
-        # display text file content in the window
-        text_widget = tk.Text(new_window, wrap='word', font=("Helvetica", 10))
-        text_widget.pack(expand=True, fill='both')
-
-        text_widget.insert(tk.END, file_content)
-        text_widget.config(state=tk.DISABLED)  # read only
-    else:
-        messagebox.showerror("File Not Found", f"{file_name} does not exist.")
-
-# initial buttons on the main window
-tk.Button(
-    window, text="Monitor Sim Card Activity", command=open_new_window,
+# create the main buttons for the user interface
+monitor_button = tk.Button(
+    window, text="Monitor Sim Activity", command=open_new_window,
     height=3, width=25, background='#ffffff', foreground='black',
     font=("Helvetica", 14, "bold")
-).pack(pady=10)
+)
+monitor_button.pack(pady=20)
 
-tk.Button(
-    window, text="Review Sim Card History", command=open_new_window2,
+history_button = tk.Button(
+    window, text="Sim Card History", command=open_new_window2,
     height=3, width=25, background='#ffffff', foreground='black',
     font=("Helvetica", 14, "bold")
-).pack(pady=10)
+)
+history_button.pack(pady=20)
 
-tk.Button(
+view_iccid_map_button = tk.Button(
+    window, text="View ICCID Map", command=view_iccid_map,
+    height=3, width=25, background='#ffffff', foreground='black',
+    font=("Helvetica", 14, "bold")
+)
+view_iccid_map_button.pack(pady=20)
+
+settings_button = tk.Button(
     window, text="Settings", command=open_settings_window,
     height=3, width=25, background='#ffffff', foreground='black',
     font=("Helvetica", 14, "bold")
-).pack(pady=10)
+)
+settings_button.pack(pady=20)
 
-tk.Button(
-    window, text="View ICCID Map", command=load_map_data_and_display,
-    height=3, width=25, background='#ffffff', foreground='black',
-    font=("Helvetica", 14, "bold")
-).pack(pady=10)
-
-# start main loop
 window.mainloop()
