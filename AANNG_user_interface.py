@@ -207,8 +207,9 @@ def open_settings_window():
         font=("Helvetica", 14, "bold")
     ).pack(pady=10)
 
+    # SIM Swap API Button in Settings
     tk.Button(
-        settings_window, text="SIM Swap API Info", command=lambda: open_api_window("SIM Swap"),
+        settings_window, text="SIM Swap API", command=lambda: open_api_window("SIM Swap"),
         height=3, width=25, background='#ffffff', foreground='black',
         font=("Helvetica", 14, "bold")
     ).pack(pady=10)
@@ -218,11 +219,6 @@ def open_api_window(api_type):
     api_window.title(f"{api_type} API Information")
     api_window.geometry("400x300")
     tk.Label(api_window, text=f"{api_type} API Information", font=("Helvetica", 14, "bold")).pack(pady=20)
-
-# exit button configuration
-exit_button = tk.Button(window, text="Exit", command=window.quit, height=3, width=25, background='#ffffff', foreground='black',
-                        font=("Helvetica", 14, "bold"))
-exit_button.pack(pady=10)
 
 # create the main buttons for the user interface
 monitor_button = tk.Button(
@@ -252,5 +248,10 @@ settings_button = tk.Button(
     font=("Helvetica", 14, "bold")
 )
 settings_button.pack(pady=20)
+
+# Exit button is now at the bottom
+exit_button = tk.Button(window, text="Exit", command=window.quit, height=3, width=25, background='#ffffff', foreground='black',
+                        font=("Helvetica", 14, "bold"))
+exit_button.pack(pady=10)
 
 window.mainloop()
