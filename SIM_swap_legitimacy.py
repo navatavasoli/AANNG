@@ -5,10 +5,10 @@ import requests
 from datetime import datetime
 from cryptography.fernet import Fernet
 
-# Initialize JSON file containing the registered SIMs (assume provided by the network)
+# initialize JSON file containing the registered SIMs (assume provided by the network)
 json_file_path = 'registered_sims.json'
 
-# Generate a key and instantiate a Fernet object
+# generate key
 try:
     with open('encryption_key.key', 'rb') as key_file:
         key = key_file.read()
@@ -26,7 +26,7 @@ def encrypt_and_save_data(data, file_path):
     with open(file_path, 'wb') as encrypted_file:
         encrypted_file.write(encrypted_data)
 
-# Decrypt and load data from file
+# decrypt and load data from file
 def load_and_decrypt_data(file_path):
     try:
         with open(file_path, 'rb') as encrypted_file:
@@ -37,21 +37,63 @@ def load_and_decrypt_data(file_path):
         print(f"Error loading encrypted ICCIDs: {e}")
         return np.array([])
 
-# Load ICCIDs into a NumPy array
+# configure latency API
+LATENCY_API_URL = "http://127.0.0.1:7999/qos/v1/latency"
+
+# set device latency
+def set_device_latency(device_id, latency, duration):
+    try:
+        data = {
+            "device": {
+                "deviceId": device_id
+            },
+            "latency": latency,
+            "duration": duration
+        }
+        response = requests.post(LATENCY_API_URL, json=data)
+
+        if response.status_code == 201:
+            response_data = response.json()
+            transaction_id = response_data.get("transactionId")
+            remaining_time = response_data.get("remainingTime")
+            print(f"Latency set successfully. Transaction ID: {transaction_id}, Remaining time: {remaining_time}")
+            return transaction_id, remaining_time
+        else:
+            print(f"Failed to set latency: {response.status_code} - {response.json()}")
+            return None, None
+    except requests.exceptions.RequestException as e:
+        print(f"Error setting latency: {e}")
+        return None, None
+
+# get latency session information
+def get_device_latency_sessions(device_id):
+    try:
+        response = requests.get(f"{LATENCY_API_URL}?deviceId={device_id}")
+
+        if response.status_code == 200:
+            latency_data = response.json()
+            return latency_data.get('sessions', [])
+        else:
+            print(f"Failed to retrieve latency sessions: {response.status_code} - {response.json()}")
+            return []
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching latency sessions: {e}")
+        return []
+
+# put ICCIDs into an array by parsing JSON file
 def load_iccids(file_path):
     return load_and_decrypt_data(file_path)
 
-# Bandwidth API configuration
+# configure bandwidth API
 API_URL = "http://127.0.0.1:7999/qos/v1/bandwidth"
 LOCATION_API_URL = "http://127.0.0.1:7999/location/v1/center"
-DEVICE_ID = "17"  # Set the device ID you want to query
+DEVICE_ID = "17"  # this is specific to our group based on the email they gave
 AEP_HOST = "192.168.3.18"  # Shabodi server IP
 CLIENT_ID = "380dfca1-6539-4890-9595-21a57c8f907d"
 CLIENT_SECRET = "enMKQcRauITqqdsDGsbNDUN_JlNgLYQkkdPhe5IF8Ws"
 
-# Function to request the access token
 def get_token(client_id, client_secret):
-    url = f"http://{AEP_HOST}:31002/security/v1/token"  # Adjusted port and endpoint
+    url = f"http://{AEP_HOST}:31002/security/v1/token" 
     headers = {
         "Content-Type": "application/json"
     }
@@ -60,7 +102,6 @@ def get_token(client_id, client_secret):
         "client_secret": client_secret
     }
 
-    # Making the POST request to obtain the token
     response = requests.post(url, headers=headers, json=data, verify=False)
     if response.status_code == 200:
         token = response.json().get("access_token")
@@ -113,7 +154,7 @@ def verify_device_location(token, device_id, latitude, longitude, radius):
                 },
                 "radius": radius
             },
-            "maxAge": 120  # maxAge in seconds, adjust if needed
+            "maxAge": 120  
         }
         response = requests.post(f"{LOCATION_API_URL}/verify", headers=headers, json=body)
 
@@ -127,13 +168,14 @@ def verify_device_location(token, device_id, latitude, longitude, radius):
         print(f"Error verifying location: {e}")
         return None
 
-# Log bandwidth data
+# log data from bandwidth 
+# we can potentially make a graph from this, but it isn't necessary for our MVP
 def log_bandwidth_data(data):
-    data['timestamp'] = datetime.now().isoformat()  # Include a timestamp
+    data['timestamp'] = datetime.now().isoformat()  
     with open('bandwidth_log.json', 'a') as log_file:
         log_file.write(json.dumps(data) + "\n")
 
-# Detect duplicated or swapped SIMs
+# detect swap or duplication
 def detection(current_iccid_data, registered_iccids):
     detected_issues = []
     for entry in current_iccid_data:
@@ -150,10 +192,8 @@ def detection(current_iccid_data, registered_iccids):
     if detected_issues:
         print("Detected SIM issues:", detected_issues)
 
-        # space to accept the SIM Swap
-
 if __name__ == "__main__":
-    token = get_token(CLIENT_ID, CLIENT_SECRET)  # Get the token
+    token = get_token(CLIENT_ID, CLIENT_SECRET) 
 
     if token:
         while True:
